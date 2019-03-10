@@ -11,35 +11,57 @@ export class ProductListComponent implements OnInit {
   imageWidth: number = 50;
   imageMargin: number = 2;
   showImage: boolean = false;
-  errorMessage: string
+  sortDef: object = {
+    price: true,
+    starRating: true
+  };
+  errorMessage: string;
   _listFilter: string;
-  get listFilter(): string{
+  get listFilter(): string {
     return this._listFilter;
   }
-  set listFilter (value: string) {
+  set listFilter(value: string) {
     this._listFilter = value;
-    this.filteredProducts = this.listFilter ? this.performFilter(this.listFilter) : this.products;
+    this.filteredProducts = this.listFilter
+      ? this.performFilter(this.listFilter)
+      : this.products;
   }
 
   filteredProducts: IProduct[];
   products: IProduct[] = [];
 
-  constructor(private productService: ProductService) {
-    
-  }
+  constructor(private productService: ProductService) {}
 
   onRatingClicked(message: string): void {
-    this.pageTitle = 'Product List: ' + message;
+    this.pageTitle = "Product List: " + message;
   }
 
   performFilter(filterBy: string): IProduct[] {
     filterBy = filterBy.toLocaleLowerCase();
-    return this.products.filter((product: IProduct) =>
-    product.productName.toLocaleLowerCase().indexOf(filterBy) !== -1);
+    return this.products.filter(
+      (product: IProduct) =>
+        product.productName.toLocaleLowerCase().indexOf(filterBy) !== -1
+    );
   }
 
   toggleImage(): void {
     this.showImage = !this.showImage;
+  }
+
+  sortProductsListBy(propertyName: string): void {
+    if (this.sortDef[propertyName]) {
+      this.filteredProducts = this.filteredProducts.sort(
+        this.compareProducts(propertyName)
+      );
+      this.sortDef[propertyName] = false;
+    } else {
+      this.filteredProducts = this.filteredProducts.reverse();
+      this.sortDef[propertyName] = true;
+    }
+  }
+
+  compareProducts(property: string) {
+    return (a: IProduct, b: IProduct) => a[property] - b[property];
   }
 
   ngOnInit(): void {
@@ -48,7 +70,7 @@ export class ProductListComponent implements OnInit {
         this.products = products;
         this.filteredProducts = this.products;
       },
-      error => this.errorMessage = <any>error
+      error => (this.errorMessage = <any>error)
     );
   }
 }
